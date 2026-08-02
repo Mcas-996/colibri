@@ -337,6 +337,7 @@ all: colibri$(EXE)
 # phony targets — 'glm' kept for backward compatibility
 colibri: colibri$(EXE)
 glm: colibri$(EXE)
+deepseek_v4: deepseek_v4$(EXE)
 
 # Config stamp: make only tracks file timestamps, not flag changes. Without this,
 # `make colibri.exe CUDA_DLL=1` after a prior CPU-only build reports "up to date"
@@ -467,6 +468,9 @@ inkling$(EXE): inkling.c st.h json.h compat.h $(INK_CUDA_OBJ)
 kimi_k3$(EXE): kimi_k3.c st.h json.h tok.h tok_unicode.h tok_unicode_o200k.h compat.h quant.h omp_tune.h route_trace.h $(VK_OBJ) $(VK_SPV)
 	$(CC) $(CFLAGS) kimi_k3.c $(VK_OBJ) -o kimi_k3$(EXE) $(LDFLAGS)
 
+deepseek_v4$(EXE): deepseek_v4.c st.h json.h tok.h tok_unicode.h tok_unicode_o200k.h compat.h quant.h
+	$(CC) $(CFLAGS) deepseek_v4.c -o deepseek_v4$(EXE) $(LDFLAGS)
+
 # Use a baseline that matches the compiler target. macOS already targets a
 # portable baseline when ARCH is empty; forcing the x86 value there breaks
 # Apple Silicon. Unknown targets use native rather than an invalid x86 flag.
@@ -596,6 +600,9 @@ tests/test_compat_direct$(EXE): tests/test_compat_direct.c compat.h
 tests/test_route_trace$(EXE): tests/test_route_trace.c route_trace.h
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
+tests/test_deepseek_v4$(EXE): tests/test_deepseek_v4.c deepseek_v4.c st.h json.h tok.h tok_unicode.h tok_unicode_o200k.h compat.h quant.h
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+
 tests/test_dsa_select$(EXE): tests/test_dsa_select.c colibri.c st.h uring.h json.h tok.h tok_unicode.h compat.h grammar.h tier.h quant.h sample.h kv_persist.h telemetry.h route_trace.h
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
@@ -674,13 +681,14 @@ check:
 	$(MAKE) portable
 	$(MAKE) test
 
-install: colibri$(EXE) olmoe$(EXE)
+install: colibri$(EXE) olmoe$(EXE) deepseek_v4$(EXE)
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
 	$(INSTALL) -d $(DESTDIR)$(LIBEXECDIR)
 	$(INSTALL) -d $(DESTDIR)$(LIBEXECDIR)/tools
 	$(INSTALL) -m 755 coli $(DESTDIR)$(BINDIR)/coli
 	$(INSTALL) -m 755 colibri$(EXE) $(DESTDIR)$(LIBEXECDIR)/colibri$(EXE)
 	$(INSTALL) -m 755 olmoe$(EXE) $(DESTDIR)$(LIBEXECDIR)/olmoe$(EXE)
+	$(INSTALL) -m 755 deepseek_v4$(EXE) $(DESTDIR)$(LIBEXECDIR)/deepseek_v4$(EXE)
 	$(INSTALL) -m 644 resource_plan.py doctor.py autotune.py openai_server.py version.py $(DESTDIR)$(LIBEXECDIR)/
 	$(INSTALL) -m 644 tools/*.py $(DESTDIR)$(LIBEXECDIR)/tools/
 	@# The dashboard is an optional build artifact (cd web && npm run build), so install
@@ -702,4 +710,4 @@ clean:
 
 bench: iobench$(EXE)
 	@if [ -n "$(ARGS)" ]; then ./iobench$(EXE) $(ARGS); else echo "built iobench$(EXE) — run: ./iobench$(EXE) <file> <MB> <iters> <threads> <direct 0|1>"; fi
-.PHONY: all colibri glm iq3 rans fuzz-rans cuda-test hip-test gpu-compile cuda-bench cuda-dll portable test-c test-python test check clean install uninstall bench
+.PHONY: all colibri glm deepseek_v4 iq3 rans fuzz-rans cuda-test hip-test gpu-compile cuda-bench cuda-dll portable test-c test-python test check clean install uninstall bench

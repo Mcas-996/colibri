@@ -12,6 +12,7 @@ import shutil
 FILES = [
     "olmoe", "olmoe.exe",
     "glm", "glm.exe",
+    "deepseek_v4", "deepseek_v4.exe",
     "iobench", "iobench.exe",
     "backend_cuda.o", "backend_loader.o",
     "backend_cuda_test", "backend_cuda_test.exe",
