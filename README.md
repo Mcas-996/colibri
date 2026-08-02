@@ -13,7 +13,7 @@
   English · <a href="README.zh-CN.md">简体中文</a> · <a href="README.zh-TW.md">繁體中文</a> · <a href="README.it.md">Italiano</a>
 </p>
 
-##This is a fork of [JustVugg/colibri](https://github.com/JustVugg/colibri/)
+## This is a fork of [JustVugg/colibri](https://github.com/JustVugg/colibri/)
 **Tiny engine, immense model.** Run **frontier MoE models — 744B to 2.8T
 parameters** — on consumer and heterogeneous hardware, in pure C with zero
 engine dependencies, by treating storage, RAM, and VRAM as one inference
