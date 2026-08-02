@@ -154,11 +154,21 @@ static void tok_load(Tok *T, const char *path){
     hm_init(&T->merges, mc);
     if(merges) for(int i=0;i<merges->len;i++){
         jval *pr=merges->kids[i];
-        if(!pr||pr->t!=J_ARR||pr->len<2||!pr->kids[0]||!pr->kids[1]||
-           pr->kids[0]->t!=J_STR||pr->kids[1]->t!=J_STR){
+        const char *l=NULL, *r=NULL;
+        int ll=0, rl=0;
+        if(pr && pr->t==J_ARR && pr->len>=2 && pr->kids[0] && pr->kids[1] &&
+           pr->kids[0]->t==J_STR && pr->kids[1]->t==J_STR){
+            l=pr->kids[0]->str; r=pr->kids[1]->str;
+            ll=(int)strlen(l); rl=(int)strlen(r);
+        } else if(pr && pr->t==J_STR){
+            /* Hugging Face tokenizers serialize BPE merges as "left right". */
+            const char *sep=strchr(pr->str,' ');
+            if(sep && sep>pr->str && sep[1]){
+                l=pr->str; ll=(int)(sep-pr->str); r=sep+1; rl=(int)strlen(r);
+            }
+        }
+        if(!l || !r){
             fprintf(stderr,"tokenizer.json: malformed merge entry %d\n",i); exit(1); }
-        const char *l=pr->kids[0]->str, *r=pr->kids[1]->str;
-        int ll=(int)strlen(l), rl=(int)strlen(r);
         char *key=malloc(ll+1+rl); memcpy(key,l,ll); key[ll]=0; memcpy(key+ll+1,r,rl);
         hm_put(&T->merges, key, ll+1+rl, i);
     }

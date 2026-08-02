@@ -252,6 +252,15 @@ static void v4_wload(V4Model *m, V4W *w, const char *name, int O, int I, int opt
     }
     char sn[640]; snprintf(sn, sizeof(sn), "%s.scale", name);
     st_tensor *s = st_find(&m->S, sn);
+    if (!s) {
+        /* Accept the compact converter spelling: foo.scale for foo.weight. */
+        const char *suffix = ".weight";
+        size_t n = strlen(name), slen = strlen(suffix);
+        if (n > slen && strcmp(name + n - slen, suffix) == 0) {
+            snprintf(sn, sizeof(sn), "%.*s.scale", (int)(n - slen), name);
+            s = st_find(&m->S, sn);
+        }
+    }
     if (!s) { fprintf(stderr, "DeepSeek-V4: %s has no scale sidecar\n", name); exit(1); }
     int64_t int4_bytes = (int64_t)O * ((I + 1) / 2);
     if (t->nbytes == (int64_t)O * I && s->numel == O) {

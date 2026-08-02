@@ -319,7 +319,7 @@ def convert_shard(src: Path, include_dspark: bool, group: int):
     with safe_open(str(src), framework="pt", device="cpu") as f:
         keys = set(f.keys())
         for original in sorted(keys):
-            if original.endswith(("weight_scale_inv", "weight_scale")):
+            if original.endswith(("weight_scale_inv", "weight_scale", ".scale")):
                 # Sidecars are consumed with their weight below.
                 continue
             kind = _classify(original, {})
@@ -346,7 +346,7 @@ def convert_shard(src: Path, include_dspark: bool, group: int):
                     raise ValueError(f"{original}: expected packed FP4 int8/U8 matrix")
                 # Official layout is [O, I/2] bytes and [O, I/32] UE8M0.
                 _set_tensor(target, mapped.replace(".weight", ".weight"), _raw_u8(tensor))
-                _set_tensor(target, mapped.replace(".weight", ".scale"), _raw_u8(scale))
+                _set_tensor(target, mapped + ".scale", _raw_u8(scale))
                 continue
 
             if original.endswith(".weight"):
@@ -356,11 +356,11 @@ def convert_shard(src: Path, include_dspark: bool, group: int):
                 if f32.ndim == 2 and kind == "io":
                     q, scale = quant_int8(f32.cpu().numpy())
                     _set_tensor(target, mapped.replace(".weight", ".weight"), _torch_u8(q))
-                    _set_tensor(target, mapped.replace(".weight", ".scale"), _torch_f32(scale))
+                    _set_tensor(target, mapped + ".scale", _torch_f32(scale))
                 elif f32.ndim == 2 and kind == "matrix":
                     q, scale = quant_int4_grouped(f32.cpu().numpy(), group)
                     _set_tensor(target, mapped.replace(".weight", ".weight"), _torch_u8(q))
-                    _set_tensor(target, mapped.replace(".weight", ".scale"), _torch_f32(scale))
+                    _set_tensor(target, mapped + ".scale", _torch_f32(scale))
                 else:
                     _set_tensor(target, mapped, f32.float().contiguous())
             else:

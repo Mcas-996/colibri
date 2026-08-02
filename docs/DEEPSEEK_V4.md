@@ -1,5 +1,8 @@
 # DeepSeek-V4-Flash CPU support
 
+Windows PowerShell 的完整转换与运行步骤见
+[DEEPSEEK_V4_CONVERT_RUN.md](DEEPSEEK_V4_CONVERT_RUN.md)。
+
 Colibri supports the `deepseek-ai/DeepSeek-V4-Flash-0731` checkpoint through a
 separate, CPU-only CLI engine.  The runtime uses no Python or third-party
 library; PyTorch and safetensors are needed only while converting the official
